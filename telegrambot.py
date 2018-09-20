@@ -5,10 +5,10 @@ from telegram import InlineQueryResultArticle, InputTextMessageContent
 from telegram import (ReplyKeyboardMarkup, ReplyKeyboardRemove)
 from telegram.ext import InlineQueryHandler
 import logging
-import json 
+import json
 
 token = '600148561:AAFHMlyD-by4AdrxTanUFanFjdqchz6syj4'
-
+#slight change to commit
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',level=logging.INFO)
 
 DINNERSTATUS = range(1)
@@ -58,7 +58,7 @@ def unknown(bot, update):
 
 def main():
 	updater = Updater(token)
-	
+
 	#get dispatcher to register handlers
 	dispatcher = updater.dispatcher
 
@@ -87,5 +87,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-
