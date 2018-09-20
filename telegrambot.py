@@ -45,10 +45,11 @@ def start(bot, update):
     #if in a family
     #ask to set if eating dinner
     else:
+        my_name = db.find_myname(update.message.chat_id)
         waitaction.append(update.message.chat_id)
         reply_keyboard = [['Dinner?', 'Check family status', 'Add member', 'Remove member', 'Chg Name']]
         update.message.reply_text(
-            'You are in ' + family_name + " family! \n"
+            'Hi ' + my_name + '! You are in ' + family_name + " family! \n"
             'What do you want to do?',
             reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True))
         
@@ -133,7 +134,7 @@ def dostuff(bot, update):
             bot.send_message(chat_id=update.message.chat_id, text="Enter the name of the member")
         elif update.message.text == "Check family status":
             bot.send_message(chat_id=update.message.chat_id, text=familystatus(update.message.chat_id))
-        elif update.message.text == "Chg Name"
+        elif update.message.text == "Chg Name":
             waitmyname.append(update.message.chat_id)
             bot.send_message(chat_id=update.message.chat_id, text="Enter your name")
             

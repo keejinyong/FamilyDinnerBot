@@ -26,7 +26,6 @@ class DBHelper:
     #supposed to return eating status of every1 in family
     def check_status(self, phone_no):
         family_name = self.find_family(phone_no)
-        print(family_name)
         cur = self.conn.cursor()
         stmt = "SELECT * FROM " + family_name
         res = ""
@@ -34,6 +33,17 @@ class DBHelper:
             res = res + str(row)
             res = res + '\n'
             print(res)
+        cur.close()
+        return res
+        
+    def find_myname(self, phone_no):
+        family_name = self.find_family(phone_no)
+        cur = self.conn.cursor()
+        stmt = "SELECT name FROM " + family_name + " WHERE phone_number Like ?"
+        args = (phone_no, )
+        cur = self.conn.cursor()
+        cur.execute(stmt, args)
+        res = "".join("%s" % tup for tup in cur.fetchall())
         cur.close()
         return res
 
