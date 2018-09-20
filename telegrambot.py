@@ -4,19 +4,25 @@ from telegram.ext import MessageHandler, Filters
 from telegram import InlineQueryResultArticle, InputTextMessageContent
 from telegram import (ReplyKeyboardMarkup, ReplyKeyboardRemove)
 from telegram.ext import InlineQueryHandler
+from telegram.ext import JobQueue
 
 import logging
 import json
+import datetime
 
 from dbhelper import DBHelper
+
+#daily tasks time
+#utc time for pythonanywhere (-8)
+resettime = datetime.time(16,0,0)
+remindertime = datetime.time(8,0,0)
+statustime = datetime.time(9,0,0)
+
 
 token = '600148561:AAFHMlyD-by4AdrxTanUFanFjdqchz6syj4'
 #slight change to commit
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',level=logging.INFO)
 
-db = DBHelper()
-db.setup()
-db.close()
 
 waitcreatefamily = []
 waitfamilyname = []
@@ -107,7 +113,7 @@ def dostuff(bot, update):
         id = update.message.chat_id
         create_family(familyname, "", id)
         bot.send_message(chat_id=update.message.chat_id, text="Congratulations your family has been created\nPlease enter your name")
-        waitmyname.append(update.message,chat_id)
+        waitmyname.append(update.message.chat_id)
         
     elif update.message.chat_id in waitmyname:
         waitmyname.remove(update.message.chat_id)
@@ -196,16 +202,42 @@ def unknown(bot, update):
     
 def getid(bot, update):
     bot.send_message(chat_id=update.message.chat_id, text=str(update.message.chat_id))
+    
+def resetdinner(bot, job):
+    print("reset at: " + datetime.datetime.now())
+    db = DBHelper()
+    db.resetdinner()
+    db.close()
+    
+def remind(bot, job):
+    print("reminder send at: " + datetime.datetime.now())
+    db = DBHelper()
+    nums = db.litsofnum()
+    for num in nums:
+        if db.geteat(num) == "0":
+            #send reminder
+            waitdinner.append(update.message.chat_id)
+            reply_keyboard = [['Having Dinner', 'No Dinner']]
+            update.message.reply_text(
+                'You have not tell me yet, are you having dinner today?',
+                reply_markup=ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True))
+    
+def sendstatus(bot,job):
+    print("status send at: " + datetime.datetime.now())
+    db = DBHelper()
+    nums = db.litsofnum()
+    for num in nums:
+        bot.send_message(chat_id=num, text=familystatus(num))
+    
+    
 
 
 def main():
+    db = DBHelper()
+    db.setup()
+    db.close()
     updater = Updater(token)
-
-
-    #get dispatcher to register handlers
-    dispatcher = updater.dispatcher
-
-    updater = Updater(token)
+    jobqueue = updater.job_queue
 
     #get dispatcher to register handlers
     dispatcher = updater.dispatcher
@@ -232,7 +264,10 @@ def main():
 
     updater.start_polling()
     
-    print("rdy")
+    jobqueue.run_daily(resetdinner, resettime)
+    jobqueue.run_daily(sendstatus, statustime)
+    jobqueue.run_daily(remind, remindertime)
+    #jobqueue.run_once(resetdinner, 0)
 
     updater.idle()
 

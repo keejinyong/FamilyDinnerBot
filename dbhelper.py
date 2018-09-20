@@ -89,8 +89,34 @@ class DBHelper:
         self.conn.commit()
         cur.close()
         
+    def resetdinner(self):
+        stmt = "SELECT DISTINCT family_name FROM mydb"
+        cur = self.conn.cursor()
+        for row in cur.execute(stmt):
+            res = "".join("%s" % tup for tup in row)
+            stmt2 = "UPDATE " + res + " SET eating = 0"
+            cur.execute(stmt2)
+        self.conn.commit()
+        cur.close()
+        
+    def listofnum(self):
+        stmt = "SELECT phone_number FROM mydb"
+        cur = self.conn.cursor()
+        num = []
+        for row in cur.execute(stmt):
+            res = res = "".join("%s" % tup for tup in row)
+            num.append(res)
+        return num
+        
+    def geteat(self, phone_no):
+        family_name = self.find_family(phone_no)
+        stmt = "SELECT eating FROM " + family_name + " WHERE phone_number Like ?"
+        args = (phone_no, )
+        cur = self.conn.cursor()
+        res = "".join("%s" % tup for tup in cur.execute(stmt, args).fetchall())
+        return res
+        
     def close(self):
         self.conn.close()
-        print("rdyrdy")
 
 
