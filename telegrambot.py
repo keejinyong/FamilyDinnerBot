@@ -152,12 +152,14 @@ def dostuff(bot, update):
     
     #waiting for id to add
     elif update.message.chat_id in waitadd:
+        waitadd.remove(update.message.chat_id)
         id = update.message.text
         addmember(update.message.chat_id, id, "")
         bot.send_message(chat_id=update.message.chat_id, text="Added")
         
     #waiting for name to rmv
     elif update.message.chat_id in waitrmv:
+        waitrmv.remove(update.message.chat_id)
         print("nothin")
     #no action done jus echo
     else:
