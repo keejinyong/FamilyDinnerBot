@@ -10,6 +10,12 @@ import datetime
 
 from dbhelper import DBHelper
 
+#code to update menu instead of creating new
+#bot.edit_message_text(chat_id=query.message.chat_id,
+                             # message_id=query.message.message_id,
+                             # text='Choose the option:',
+                             # reply_markup=reply_markup)
+
 #daily tasks time
 #utc time for pythonanywhere (-8)
 resettime = datetime.time(16,0,0)
@@ -41,8 +47,7 @@ def start(bot, update):
     #ask if want to create family
     if not family_name:
         waitcreatefamily.append(update.message.chat_id)
-        reply_keyboard = [[InlineKeyboardButton('Yes', callback_data='Yes')], 
-            [InlineKeyboardButton('No I want to join a family', callback_data='No I want to join a family')]]
+        reply_keyboard = [[InlineKeyboardButton('Yes', callback_data='Yes'), InlineKeyboardButton('No I want to join a family', callback_data='No I want to join a family')]]
         update.message.reply_text(
             'Hi! You are not in a family yet \n'
             'Do you want to create a new family?',
@@ -155,10 +160,14 @@ def button(bot, update):
         waitcreatefamily.remove(query.message.chat_id)
         #if yes send to waitfamilyname queue
         if query.data == "Yes":
-            bot.send_message(chat_id=query.message.chat_id, text="Type a name for your family")
+            bot.edit_message_text(chat_id=query.message.chat_id, 
+                message_id=query.message.message_id,
+                text="Type a name for your family")
             waitfamilyname.append(query.message.chat_id)
         elif query.data == "No I want to join a family":
-            bot.send_message(chat_id=query.message.chat_id, text="Get your family to invite you with your id: " + str(query.message.chat_id))
+            bot.edit_message_text(chat_id=query.message.chat_id, 
+                message_id=query.message.message_id, 
+                text="Get your family to invite you with your id: " + str(query.message.chat_id))
             
     #when /start when in family 
     elif query.message.chat_id in waitaction:
@@ -166,24 +175,32 @@ def button(bot, update):
         if query.data == "Dinner?":
             #shift to waitdinner queue set key options
             waitdinner.append(query.message.chat_id)
-            reply_keyboard = [[InlineKeyboardButton('Having Dinner', callback_data='Having Dinner')], 
-                [InlineKeyboardButton('No Dinner', callback_data='No Dinner')]]
-            bot.send_message(chat_id=query.message.chat_id,
+            reply_keyboard = [[InlineKeyboardButton('Having Dinner', callback_data='Having Dinner'), InlineKeyboardButton('No Dinner', callback_data='No Dinner')]]
+            bot.edit_message_text(chat_id=query.message.chat_id,
+                message_id=query.message.message_id,
                 text='Tell me, are you having dinner today?',
                 reply_markup=InlineKeyboardMarkup(reply_keyboard))
         elif query.data == "Add member":
             #shift to waitadd queue
             waitadd.append(query.message.chat_id)
-            bot.send_message(chat_id=query.message.chat_id, text="Enter the id of your new member")
+            bot.edit_message_text(chat_id=query.message.chat_id, 
+                message_id=query.message.message_id, 
+                text="Enter the id of your new member")
         elif query.data == "Remove member":
             #shift to waitrmv queue
             waitrmv.append(query.message.chat_id)
-            bot.send_message(chat_id=query.message.chat_id, text="Enter the name of the member")
+            bot.edit_message_text(chat_id=query.message.chat_id, 
+                message_id=query.message.message_id, 
+                text="Enter the name of the member")
         elif query.data == "Check family status":
-            bot.send_message(chat_id=query.message.chat_id, text=familystatus(query.message.chat_id))
+            bot.edit_message_text(chat_id=query.message.chat_id, 
+                message_id=query.message.message_id, 
+                text=familystatus(query.message.chat_id))
         elif query.data == "Chg Name":
             waitmyname.append(query.message.chat_id)
-            bot.send_message(chat_id=query.message.chat_id, text="Enter your name")
+            bot.edit_message_text(chat_id=query.message.chat_id, 
+                message_id=query.message.message_id, 
+                text="Enter your name")
             
     #get response for eating dinner?
     elif query.message.chat_id in waitdinner:
@@ -191,14 +208,20 @@ def button(bot, update):
         if query.data == "Having Dinner":
             #eating, update sql
             set_eating(query.message.chat_id, "Eating")
-            bot.send_message(chat_id=query.message.chat_id, text="Status updated")
+            bot.edit_message_text(chat_id=query.message.chat_id, 
+                message_id=query.message.message_id, 
+                text="Status updated")
         elif query.data == "No Dinner":
             #not eatin, update sql
             set_eating(query.message.chat_id, "Not Eating")
-            bot.send_message(chat_id=query.message.chat_id, text="Status updated")
+            bot.edit_message_text(chat_id=query.message.chat_id, 
+                message_id=query.message.message_id, 
+                text="Status updated")
             
     else:
-        bot.send_message(chat_id=query.message.chat_id, text="Use /start to start")
+        bot.edit_message_text(chat_id=query.message.chat_id, 
+            message_id=query.message.message_id, 
+            text="Use /start to start")
     
 
 def help(bot, update):
@@ -228,8 +251,7 @@ def remind(bot, job):
         if db.geteat(num) == "0":
             #send reminder
             waitdinner.append(int(num))
-            reply_keyboard = [[InlineKeyboardButton('Having Dinner', callback_data='Having Dinner')], 
-                [InlineKeyboardButton('No Dinner', callback_data='No Dinner')]]
+            reply_keyboard = [[InlineKeyboardButton('Having Dinner', callback_data='Having Dinner'), InlineKeyboardButton('No Dinner', callback_data='No Dinner')]]
             bot.send_message(chat_id=num, text='You have not tell me yet, are you having dinner today?',
                 reply_markup=InlineKeyboardMarkup(reply_keyboard))
     
@@ -237,7 +259,7 @@ def sendstatus(bot,job):
     print("status send at: " + str(datetime.datetime.now()))
     db = DBHelper()
     nums = db.listofnum()
-    reply_keyboard = [['/start']]
+    reply_keyboard = ReplyKeyboardRemove()
     for num in nums:
         bot.send_message(chat_id=num, text=familystatus(num),
             reply_markup=ReplyKeyboardMarkup(reply_keyboard))

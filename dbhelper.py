@@ -125,7 +125,7 @@ class DBHelper:
         cur.close()
         
     def listofnum(self):
-        stmt = "SELECT phone_number FROM mydb WHERE family_name != null"
+        stmt = "SELECT phone_number FROM mydb WHERE family_name != ''"
         cur = self.conn.cursor()
         num = []
         for row in cur.execute(stmt):
